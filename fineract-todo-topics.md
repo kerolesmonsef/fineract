@@ -7,9 +7,11 @@ Ask in chat "trace step N" to get a code-verified answer with `file:line`.
 
 ## Part A: Money basics (no code)
 
-- [ ] 1. Double-entry: every transaction has debits = credits (5 account types: asset, liability, equity, income, expense). Ledger rows are never updated, only reversed.
+- [x] 1. Double-entry: every transaction has debits = credits (5 account types: asset, liability, equity, income, expense). Ledger rows are never updated, only reversed.
   - Bank view: a loan is an ASSET (customer owes bank), a savings balance is a LIABILITY (bank owes customer). Opposite of wallet instinct.
   - Practice: disburse 1000 into savings = Dr Loan Portfolio 1000 / Cr Customer Savings 1000. Withdraw 400 cash = Dr Customer Savings 400 / Cr Cash 400.
+  - Verified: Debit/Credit have no fixed increase/decrease meaning — each account type sits on a fixed side of `Assets + Expenses = Liabilities + Equity + Income`; a posting to an account's own side increases it, to the opposite side decreases it. Golden rule per transaction_id: SUM(debit amounts) = SUM(credit amounts).
+  - Verified: two separate layers, not one. Sub-ledger (`m_savings_account_transaction`, `running_balance_derived` — the customer's real balance) vs GL control accounts (`acc_gl_account`/`acc_gl_journal_entry` — pooled across all customers, e.g. "Savings Control", "Loan Portfolio", "Fund Source", no balance column, derived via trial balance). `JournalEntry.java:40-107` has no direct FK to the client; chain is `acc_gl_journal_entry.savings_transaction_id -> m_savings_account_transaction.savings_account_id -> m_savings_account.client_id -> m_client`.
 - [ ] 2. Money = decimal, never float. Define currency decimals, rounding mode, and when to round.
 - [ ] 3. Idempotency: a retry must not apply a repayment twice. Read `fineract-doc/src/docs/en/chapters/architecture/idempotency.adoc`, `principles.adoc`.
 
