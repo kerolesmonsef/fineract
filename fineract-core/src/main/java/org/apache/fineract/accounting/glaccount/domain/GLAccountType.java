@@ -18,8 +18,10 @@
  */
 package org.apache.fineract.accounting.glaccount.domain;
 
+import lombok.Getter;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
+@Getter
 public enum GLAccountType {
 
     ASSET(1, "accountType.asset"), //
@@ -36,15 +38,9 @@ public enum GLAccountType {
         this.code = code;
     }
 
-    public Integer getValue() {
-        return this.value;
-    }
-
-    public String getCode() {
-        return this.code;
-    }
-
+    @Getter
     private static int minValue;
+    @Getter
     private static int maxValue;
 
     static {
@@ -104,14 +100,6 @@ public enum GLAccountType {
             default:
                 return null;
         }
-    }
-
-    public static int getMinValue() {
-        return minValue;
-    }
-
-    public static int getMaxValue() {
-        return maxValue;
     }
 
     @Override
