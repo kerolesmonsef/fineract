@@ -12,7 +12,11 @@ Ask in chat "trace step N" to get a code-verified answer with `file:line`.
   - Practice: disburse 1000 into savings = Dr Loan Portfolio 1000 / Cr Customer Savings 1000. Withdraw 400 cash = Dr Customer Savings 400 / Cr Cash 400.
   - Verified: Debit/Credit have no fixed increase/decrease meaning — each account type sits on a fixed side of `Assets + Expenses = Liabilities + Equity + Income`; a posting to an account's own side increases it, to the opposite side decreases it. Golden rule per transaction_id: SUM(debit amounts) = SUM(credit amounts).
   - Verified: two separate layers, not one. Sub-ledger (`m_savings_account_transaction`, `running_balance_derived` — the customer's real balance) vs GL control accounts (`acc_gl_account`/`acc_gl_journal_entry` — pooled across all customers, e.g. "Savings Control", "Loan Portfolio", "Fund Source", no balance column, derived via trial balance). `JournalEntry.java:40-107` has no direct FK to the client; chain is `acc_gl_journal_entry.savings_transaction_id -> m_savings_account_transaction.savings_account_id -> m_savings_account.client_id -> m_client`.
-- [ ] 2. Money = decimal, never float. Define currency decimals, rounding mode, and when to round.
+- [x] 2. Money = decimal, never float. Define currency decimals, rounding mode, and when to round.
+  - Verified: `Money.java:29` stores amount as `BigDecimal`, never `double`/`float` (binary floats can't represent most decimal fractions exactly, e.g. `0.1+0.2 != 0.3`, which compounds across transactions).
+  - Verified: decimal places are per-currency, not fixed — `m_organisation_currency.decimal_places` (`OrganisationCurrency.java:37-38`), e.g. 2 for EGP/USD.
+  - Verified: rounding mode is per-tenant, configurable — `MoneyHelper.java:54-82` caches a `RoundingMode` per tenant, used with a 19-digit `MathContext` (`PRECISION=19`) for intermediate calculations.
+  - Verified: rounding happens inside the `Money` constructor itself (`Money.java:44-52`) — `amount.setScale(currency.getDecimalPlaces(), tenantRoundingMode)` — so any value becomes rounded the moment it's wrapped as `Money`, not left floating until later. Special case: `inMultiplesOf` rounds to a denomination (e.g. nearest 5) for 0-decimal currencies with no coins.
 - [ ] 3. Idempotency: a retry must not apply a repayment twice. Read `fineract-doc/src/docs/en/chapters/architecture/idempotency.adoc`, `principles.adoc`.
 
 ## Part B: Run it and meet the actors
